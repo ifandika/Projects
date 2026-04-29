@@ -1,0 +1,179 @@
+:root {
+  --border-radius: 1rem;
+}
+
+* {
+  user-select: none;
+  box-sizing: border-box;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+  background: linear-gradient(145deg, #1a3c5e 0%, #0f2a44 100%);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0;
+  padding: 20px;
+}
+
+/* main keyboard container */
+.keyboard-container {
+  background: rgba(10, 25, 40, 0.65);
+  backdrop-filter: blur(2px);
+  border-radius: var(--border-radius);
+  padding: 1.8rem 2rem 2.2rem 2rem;
+  box-shadow:
+    0 20px 35px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(72, 187, 255, 0.3);
+}
+
+/* Display area (top middle) */
+.text-area {
+  background: #0b1b2f;
+  border-radius: var(--border-radius);
+  padding: 1.2rem 1.5rem;
+  margin-bottom: 2.2rem;
+  text-align: center;
+  border: 1px solid #2c5f8a;
+}
+
+#keyDisplay {
+  width: 100%;
+  background: #021a2c;
+  border: none;
+  font-size: 2rem;
+  font-weight: 500;
+  letter-spacing: 1px;
+  color: #b9f3ff;
+  text-align: center;
+  padding: 0.75rem 0.5rem;
+  border-radius: var(--border-radius);
+  resize: none;
+  outline: none;
+  box-shadow:
+    inset 0 1px 4px #00000055,
+    0 1px 0 #2c6e9e;
+  transition: all 0.1s ease;
+}
+
+#keyDisplay:focus {
+  border-color: #3ea5e0;
+  background: #03253f;
+  color: #e0f3ff;
+}
+
+.display-label {
+  display: block;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  color: #7bb3d4;
+  margin-bottom: 0.6rem;
+  font-weight: 500;
+  text-shadow: 0 1px 0 #00000033;
+}
+
+/* ----- Keyboard grid layout (realistic) ----- */
+.keyboard {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+}
+
+.row {
+  display: flex;
+  justify-content: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  pointer-events: none;
+}
+
+/* Ocean key style — white background by default, elegant */
+.key {
+  background: #ffffff;
+  color: #0a2f44;
+  font-size: 1.3rem;
+  font-weight: 600;
+  font-family: "Segoe UI", "Inter", monospace;
+  min-width: 65px;
+  padding: 0.85rem 0.2rem;
+  text-align: center;
+  border-radius: 1.2rem;
+  box-shadow: 0 6px 0 #9bb7d0;
+  cursor: pointer;
+  transition: 0.07s linear;
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  letter-spacing: 0.5px;
+  backdrop-filter: blur(2px);
+}
+
+/* ocean blue active style (triggered by keyboard press) */
+.key.ocean-press {
+  background: #1e6fdf !important;
+  background: linear-gradient(145deg, #1c6bc9, #0e4e9e) !important;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+  color: white !important;
+  border-color: #a5dcff;
+  transform: translateY(2px);
+  transition: 0.05s;
+}
+
+/* special key width modifiers */
+.key-wide {
+  min-width: 95px;
+}
+
+.key-space {
+  min-width: 280px;
+  flex-grow: 0.4;
+}
+
+.key-small {
+  min-width: 55px;
+}
+
+/* responsive for small devices */
+@media (max-width: 760px) {
+  .keyboard-container {
+    padding: 1rem 1.2rem 1.6rem;
+  }
+  .key {
+    min-width: 48px;
+    font-size: 1rem;
+    padding: 0.6rem 0.1rem;
+  }
+  .key-space {
+    min-width: 180px;
+  }
+  .key-wide {
+    min-width: 70px;
+  }
+  #keyDisplay {
+    font-size: 1.4rem;
+  }
+  .row {
+    gap: 0.4rem;
+    pointer-events: none;
+  }
+}
+
+@media (max-width: 560px) {
+  .key {
+    min-width: 42px;
+    font-size: 0.85rem;
+    padding: 0.5rem 0;
+  }
+  .key-space {
+    min-width: 130px;
+  }
+}
+
+footer {
+  text-align: center;
+  margin-top: 1.5rem;
+  font-size: 1rem;
+  color: #6f9fcb;
+}

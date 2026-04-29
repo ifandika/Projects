@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
+    <title>Online Visual Keyboard Input</title>
+    <link rel="stylesheet" href="style.css">
+  </head>
+  <body>
+    <!---------------------- 
+    This for container area
+    ----------------------->
+    <div class="keyboard-container">
+
+      <!----------------------
+      Is for top, input text area
+      ------------------------>
+      <div class="text-area">
+        <div class="display-label">Press Any Key</div>
+        <input
+          type="text"
+          id="keyDisplay"
+          placeholder="Keyboard input will appear here ..."
+          readonly
+        />
+      </div>
+
+      <!----------------------
+      Visual Keyboard Layout (UI)
+      ----------------------->
+      <div class="keyboard" id="virtualKeyboard">
+        <!-- Row 1: Number row + some extra -->
+        <div class="row" id="row-numbers"></div>
+        <!-- Row 2: QWERTYUIOP -->
+        <div class="row" id="row-qwerty"></div>
+        <!-- Row 3: ASDFGHJKL -->
+        <div class="row" id="row-asdf"></div>
+        <!-- Row 4: ZXCVBNM and some modifiers -->
+        <div class="row" id="row-zxcv"></div>
+        <!-- Row 5: space, enter, shift, ctrl etc but we focus on keys with typical mapping -->
+        <div class="row" id="row-modifiers"></div>
+      </div>
+
+      <!----------------------
+      Just for footer
+      ----------------------->
+      <footer>By M. Ifandika - 2026</footer>
+    </div>
+
+    <script src="main.js"></script>
+  </body>
+</html>
