@@ -15,7 +15,6 @@ body {
   justify-content: center;
   align-items: center;
   margin: 0;
-  padding: 20px;
 }
 
 /* main keyboard container */
@@ -57,12 +56,6 @@ body {
     inset 0 1px 4px #00000055,
     0 1px 0 #2c6e9e;
   transition: all 0.1s ease;
-}
-
-#keyDisplay:focus {
-  border-color: #3ea5e0;
-  background: #03253f;
-  color: #e0f3ff;
 }
 
 .display-label {
