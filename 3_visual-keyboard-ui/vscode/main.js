@@ -6,12 +6,7 @@
 //    The goal: each UI button gets a dataset.keyValue for matching.
 // ------------------------------
 
-// Key layout definition: each object: { display: "A", matchKeys: ["a", "A"], codeMatch: "KeyA" } etc.
-// We'll generate rows based on conventional keyboard.
-// We'll also handle special keys: Space, Enter, Tab, Backspace, Shift (visual only but we'll support press)
-// For ocean feedback, we'll match based on event.key (standardized) and also event.code fallback.
 
-// predefine mapping for cleaner UI generation and press matching.
 const keyDefinitions = [
   // Row 1: Digits and symbols (we'll capture standard digit keys)
   { display: "` ~", matchKeys: ["`", "~"], codeMatch: "Backquote" },
@@ -400,3 +395,8 @@ document.body.focus();
 console.log(
   "Ocean Keyboard UI ready — press any physical key to see ocean blue effect + text area update",
 );
+
+/**
+ * Text Title animation
+ * 
+ */

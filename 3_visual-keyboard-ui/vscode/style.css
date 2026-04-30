@@ -12,9 +12,19 @@ body {
   background: linear-gradient(145deg, #1a3c5e 0%, #0f2a44 100%);
   min-height: 100vh;
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
   margin: 0;
+}
+
+.title {
+  color: white;
+  text-shadow: 0 1px 0 #00000033;
+  margin-bottom: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 100px;
+  font-weight: 900; 
 }
 
 /* main keyboard container */
@@ -166,7 +176,7 @@ body {
 
 footer {
   text-align: center;
-  margin-top: 1.5rem;
+  margin-top: 5rem;
   font-size: 1rem;
-  color: #6f9fcb;
+  color: white;
 }
