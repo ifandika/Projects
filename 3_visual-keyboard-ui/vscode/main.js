@@ -114,22 +114,19 @@ const keyDefinitions = [
   },
 ];
 
-// Organize rows based on indices (we'll rebuild rows accordingly)
-// we split into row groups for natural look:
 const rowStructure = [
   // row 0 : numbers and backtick, minus, equals, backspace
-  keyDefinitions.slice(0, 14), // from ` to backspace (index 0-13)
+  keyDefinitions.slice(0, 14),
   // row 1 : QWERTY row
-  keyDefinitions.slice(14, 27), // Q through backslash (14->26)
+  keyDefinitions.slice(14, 27),
   // row 2 : ASDF + enter
-  keyDefinitions.slice(27, 39), // A through Enter (27-38)
+  keyDefinitions.slice(27, 39),
   // row 3 : ZXCV.. shift row
-  keyDefinitions.slice(39, 50), // Z through Shift (39-49)
+  keyDefinitions.slice(39, 50),
   // row 4 : modifiers row (Ctrl Alt Space Tab Caps)
-  keyDefinitions.slice(50, 55), // last 5 keys
+  keyDefinitions.slice(50, 55),
 ];
 
-// Get container rows
 const rowNumbersDiv = document.getElementById("row-numbers");
 const rowQwertyDiv = document.getElementById("row-qwerty");
 const rowAsdfDiv = document.getElementById("row-asdf");
@@ -143,17 +140,14 @@ const rowContainers = [
   rowModifiersDiv,
 ];
 
-// Store all key elements in a Map for quick lookup: key -> DOM element (based on match keys or code)
-const keyElementMap = new Map(); // maps identifier string (like "KeyA", "Digit1", "Space", "Enter") to DOM element
-// Also we want matching by event.key lowercased/ normalized; we'll also match via code.
+const keyElementMap = new Map();
 
-// Build UI
 function buildKeyboard() {
   for (let r = 0; r < rowStructure.length; r++) {
     const rowKeys = rowStructure[r];
     const container = rowContainers[r];
     if (!container) continue;
-    container.innerHTML = ""; // clear if any
+    container.innerHTML = "";
     rowKeys.forEach((keyDef) => {
       const keyDiv = document.createElement("div");
       keyDiv.className = "key";
@@ -161,22 +155,15 @@ function buildKeyboard() {
         keyDiv.classList.add(keyDef.extraClass);
       }
       keyDiv.textContent = keyDef.display;
-      // store matching data: we will use both codeMatch and matchKeys for identification
       if (keyDef.codeMatch) {
         keyDiv.dataset.code = keyDef.codeMatch;
       }
       if (keyDef.matchKeys && keyDef.matchKeys.length) {
-        // store primary match key for quick mapping (first one usually the lowercase/standard)
         keyDiv.dataset.primaryKey = keyDef.matchKeys[0];
-        // Also store all match keys joined (but we manage in event)
       }
-      // For space and special entries, handle accordingly
-      // Add click simulation (optional: clicking button also triggers effect and updates text area)
       keyDiv.addEventListener("click", (e) => {
         e.stopPropagation();
-        // Simulate key press effect for UI feedback
         applyOceanEffect(keyDiv);
-        // For click, we want to simulate key value: based on display
         let simulatedKey = keyDef.display;
         if (keyDef.display === "Space") simulatedKey = " ";
         else if (keyDef.display === "⌫") simulatedKey = "Backspace";
@@ -191,24 +178,17 @@ function buildKeyboard() {
             keyDef.display.length === 1 ? keyDef.display : keyDef.display;
         }
         updateTextAreaFromKey(simulatedKey);
-        // Also remove ocean effect after short delay, but we handle via timeout management globally
-        // scheduleRemoveEffect(keyDiv);
       });
       container.appendChild(keyDiv);
 
-      // Map this element to multiple possible match identifiers
-      // Map by codeMatch (most reliable for physical layout)
       if (keyDef.codeMatch) {
         keyElementMap.set(keyDef.codeMatch, keyDiv);
       }
-      // Map by each matchKey string (lowercase/primary)
       if (keyDef.matchKeys) {
         keyDef.matchKeys.forEach((match) => {
-          // For special conflict, we keep unique but space, etc
           if (!keyElementMap.has(match.toLowerCase())) {
             keyElementMap.set(match.toLowerCase(), keyDiv);
           }
-          // also map actual key as typed sometimes e.g. " " maps to Space
           if (match === " ") keyElementMap.set(" ", keyDiv);
           if (match === "Backspace") keyElementMap.set("Backspace", keyDiv);
           if (match === "Enter") keyElementMap.set("Enter", keyDiv);
@@ -219,9 +199,8 @@ function buildKeyboard() {
           if (match === "CapsLock") keyElementMap.set("CapsLock", keyDiv);
         });
       }
-      // additionally we might map by exact code variants (ShiftLeft/Right but we generalize)
       if (keyDef.codeMatch === "ShiftLeft") {
-        keyElementMap.set("ShiftRight", keyDiv); // both shifts highlight same UI
+        keyElementMap.set("ShiftRight", keyDiv);
         keyElementMap.set("Shift", keyDiv);
       }
       if (keyDef.codeMatch === "ControlLeft") {
@@ -243,13 +222,10 @@ function buildKeyboard() {
   }
 }
 
-// ocean effect controller: we want to apply class and remove after short duration (150ms)
 let activeTimeout = null;
 function applyOceanEffect(keyElement) {
   if (!keyElement) return;
-  // remove existing ocean class if any (to restart transition)
   keyElement.classList.remove("ocean-press");
-  // force reflow for smoother retrigger
   void keyElement.offsetWidth;
   keyElement.classList.add("ocean-press");
 }
@@ -265,13 +241,11 @@ function scheduleRemoveEffect(keyElement) {
   // }, 140);
 }
 
-// Update the top-middle text area based on pressed key
 function updateTextAreaFromKey(pressedKeyValue) {
   const displayInput = document.getElementById("keyDisplay");
   if (!displayInput) return;
   let outputText = "";
   if (pressedKeyValue === "Backspace") {
-    // remove last character mimicking simple backspace on input content
     let current = displayInput.value;
     displayInput.value = current.slice(0, -1);
     return;
@@ -295,20 +269,14 @@ function updateTextAreaFromKey(pressedKeyValue) {
     pressedKeyValue === "Alt" ||
     pressedKeyValue === "CapsLock"
   ) {
-    // modifiers don't add text but we still show feedback on UI just not text:
-    // we can optionally show on text area: " [Modifier] "
     displayInput.value = displayInput.value + `⟨${pressedKeyValue}⟩`;
     return;
   }
-  // fallback: if other key like arrow etc, we can ignore but for troubleshooting.
   if (!pressedKeyValue || pressedKeyValue.length > 2) return;
   displayInput.value = displayInput.value + pressedKeyValue;
 }
 
-// Core: global keyboard event listener
 function handlePhysicalKeyPress(event) {
-  // prevent default only for some keys like space scrolling? Not necessary but okay to avoid weirdness
-  // but we want to keep page stable, don't prevent all to allow shortcuts? we prevent only those that cause page jumps
   if (
     event.key === " " ||
     event.key === "Space" ||
@@ -320,26 +288,20 @@ function handlePhysicalKeyPress(event) {
   let pressedKey = event.key;
   const code = event.code;
 
-  // Determine target UI element: try by event.key first (normalized) then by code.
   let targetKeyElement = null;
-  // Map for standard letters/digits by lower case
   if (pressedKey && pressedKey.length === 1) {
-    // check map for exact (lowercase)
     const lowerKey = pressedKey.toLowerCase();
     if (keyElementMap.has(lowerKey))
       targetKeyElement = keyElementMap.get(lowerKey);
     else if (keyElementMap.has(pressedKey))
       targetKeyElement = keyElementMap.get(pressedKey);
   }
-  // if not found through key, try code (like Space, Enter, Backspace, etc)
   if (!targetKeyElement && code && keyElementMap.has(code)) {
     targetKeyElement = keyElementMap.get(code);
   }
-  // additional mapping for special: KeyA etc. Our map includes "KeyA", "Digit1" etc.
   if (!targetKeyElement && code && keyElementMap.has(code)) {
     targetKeyElement = keyElementMap.get(code);
   }
-  // also check by event.key for " " space
   if (!targetKeyElement && (pressedKey === " " || pressedKey === "Space")) {
     targetKeyElement = keyElementMap.get(" ") || keyElementMap.get("Space");
   }
@@ -358,13 +320,11 @@ function handlePhysicalKeyPress(event) {
   if (!targetKeyElement && pressedKey === "CapsLock")
     targetKeyElement = keyElementMap.get("CapsLock");
 
-  // apply ocean effect to matched button
   if (targetKeyElement) {
     applyOceanEffect(targetKeyElement);
     // scheduleRemoveEffect(targetKeyElement);
   }
 
-  // Update text area with meaningful representation
   let displayKey = pressedKey;
   if (pressedKey === " ") displayKey = "Space";
   if (pressedKey === "Control") displayKey = "Ctrl";
@@ -374,29 +334,17 @@ function handlePhysicalKeyPress(event) {
   updateTextAreaFromKey(displayKey);
 }
 
-// cleanup previous listener and attach
 window.addEventListener("keydown", handlePhysicalKeyPress);
 
-// Initialize everything
 buildKeyboard();
 
-// Additional improvement: For the text area we also show initial placeholder info, and ensure focus doesn't steal? it's fine
-// Also we need to set the readonly input to not interfere with keyboard events but still display.
-// Ensure that body remains focusable to capture keys. document.body click to focus
 document.body.addEventListener("click", () => {
-  // just to ensure no active element steals keyboard? no need, but we can focus body
   document.body.focus();
 });
 document.body.setAttribute("tabindex", "0");
 document.body.style.outline = "none";
 document.body.focus();
 
-// small console info
 console.log(
   "Ocean Keyboard UI ready — press any physical key to see ocean blue effect + text area update",
 );
-
-/**
- * Text Title animation
- * 
- */
