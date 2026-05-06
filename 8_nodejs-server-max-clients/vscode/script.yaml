@@ -1,0 +1,26 @@
+# script.yaml
+config:
+  target: "http://localhost:3000"
+  phases:
+    - duration: 15      # Durasi fase (detik)
+      arrivalRate: 10   # 10 user baru per detik
+      name: "Ramp up"
+    - duration: 60
+      arrivalRate: 50   # 50 user per detik
+      name: "Peak load"
+    - duration: 30
+      arrivalRate: 5    # Turun perlahan
+      name: "Ramp down"
+  defaults:
+    headers:
+      Content-Type: "application/json"
+
+scenarios:
+  # Skenario 1: User biasa melakukan GET request
+  - name: "Get user data"
+    flow:
+      - get:
+          url: "/api/users/1"
+          expect:
+            - statusCode: 200
+            - contentType: json
