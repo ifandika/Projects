@@ -2,7 +2,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
+/**
+ * This is main class for program
+ */
 public class Main {
+  /**
+   * Declaration of all that is needed
+   */
   private static Master master = new Master();
   private static Provinsi provinsi = new Provinsi();
   private static BPS bps = new BPS();
@@ -10,8 +16,10 @@ public class Main {
   private static Scanner scanner = new Scanner(System.in);
   private static boolean mainContition = true;
 
+  // == Main Method ==
   public static void main(String[] args) {
     try {
+      // Add the data set
       master.addData(new ArrayList<>(List.of(1, 11, 11, "Aceh", 118.487D, 19.170D, 137.657D)));  
       master.addData(new ArrayList<>(List.of(2, 12, 12, "Sumatera Utara", 248.734D, 141.165D, 389.899D)));  
       master.addData(new ArrayList<>(List.of(3, 13, 13, "Sumatera Barat", 138.979D, 14.556D, 153.535D)));  
@@ -19,14 +27,17 @@ public class Main {
       master.addData(new ArrayList<>(List.of(4, 15, 15, "Jambi", 71.000D, 10.429D, 81.429D)));
 
       while(mainContition) {
+        // Print program main menu
         System.out.println("\n[ Menu Utama ]");
         System.out.println("1. Cari Provinsi");
         System.out.println("2. Kode BPS");
         System.out.println("3. Status Satuan Pendidikan Negeri");
         System.out.print("\nPilih menu [1-3]: ");
 
+        // Get input
         int inputMenu = scanner.nextInt();
 
+        // Check input menu
         if(inputMenu == 1) {
           ArrayList<Object> resProv = provinsi.cariProvinsi(master.getDataSet());
 
@@ -54,6 +65,7 @@ public class Main {
           System.out.println("[INFO] Menu tidak ditemukan");
         }
 
+        // Continue program or stop ?
         System.out.print("\nLanjut Y/n: ");
         scanner.nextLine();
         char inputContinue = scanner.next().charAt(0);

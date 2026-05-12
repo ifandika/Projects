@@ -1,8 +1,21 @@
 import java.util.ArrayList;
 import java.util.Scanner;
 
+/**
+ * This class is for data education that have one method.
+ */
 public class Pendidikan extends Master {
 
+  /**
+   * This method is for search data education country, and return value is double arrayList
+   * - Initial variable
+   * - Print message and get input
+   * - Check range input and assign variable
+   * - Looping data with range data conditions, if true add data
+   * - Return result
+   * @param data
+   * @return
+   */
   public ArrayList<ArrayList<Object>> cariSatuanPendidikanNegeri(ArrayList<ArrayList<Object>> data) {
     Scanner scanner = new Scanner(System.in);
     ArrayList<ArrayList<Object>> result = new ArrayList<>();
@@ -18,17 +31,25 @@ public class Pendidikan extends Master {
 
     double range1 = 0, range2 = 0;
 
-    if(inputNilaiKondisi == 1) {
-      range1 = 10.000; range2 = 70.000;
-    }
-    else if(inputNilaiKondisi == 2) {
-      range1 = 70.000; range2 = 140.000;
-    }
-    else if(inputNilaiKondisi == 3) {
-      range1 = 140.000; range2 = 210.000;
-    }
-    else if(inputNilaiKondisi == 4) {
-      range1 = 210.000; range2 = 280.000;
+    switch (inputNilaiKondisi) {
+      case 1:
+        range1 = 10.000;
+        range2 = 70.000;
+        break;
+      case 2:
+        range1 = 70.000;
+        range2 = 140.000;
+        break;
+      case 3:
+        range1 = 140.000;
+        range2 = 210.000;
+        break;
+      case 4:
+        range1 = 210.000;
+        range2 = 280.000;
+        break;
+      default:
+        break;
     }
 
     for(ArrayList<Object> object : data) {
