@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Matter.js - Interactive Physics | Slow to Fast Motion</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0a0f1e 0%, #0a1a2a 100%);
+            font-family: 'Segoe UI', 'Inter', system-ui, sans-serif;
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #canvas-container {
+            position: relative;
+            background: #0f1724;
+            border-radius: 28px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5), inset 0 1px 2px rgba(255, 255, 255, 0.1);
+            overflow: hidden;
+        }
+
+        canvas {
+            display: block;
+            cursor: pointer;
+        }
+
+        /* UI Panel */
+        .ui-panel {
+            position: absolute;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(10, 20, 30, 0.9);
+            backdrop-filter: blur(20px);
+            border-radius: 60px;
+            padding: 12px 28px;
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            border: 1px solid rgba(100, 180, 250, 0.3);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+            z-index: 100;
+            pointer-events: auto;
+        }
+
+        .control-group {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 6px 18px;
+            border-radius: 40px;
+        }
+
+        .control-group label {
+            color: #8bb9fe;
+            font-weight: 600;
+            font-size: 0.85rem;
+            letter-spacing: 0.5px;
+        }
+
+        input {
+            background: #1e2a36;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 30px;
+            color: #ffdd99;
+            font-weight: bold;
+            font-size: 1rem;
+            width: 80px;
+            text-align: center;
+            font-family: monospace;
+        }
+
+        button {
+            background: linear-gradient(135deg, #2a6f8f, #1a4b63);
+            border: none;
+            padding: 8px 24px;
+            border-radius: 40px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.1s, filter 0.2s;
+            font-size: 0.9rem;
+        }
+
+        button:hover {
+            filter: brightness(1.1);
+            transform: scale(1.02);
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        .speed-display {
+            font-family: monospace;
+            background: #030c14;
+            padding: 6px 16px;
+            border-radius: 40px;
+            color: #ffbb77;
+            font-weight: bold;
+            font-size: 0.9rem;
+            letter-spacing: 1px;
+        }
+
+        h3 {
+            color: white;
+            font-size: 0.75rem;
+            margin: 0;
+            opacity: 0.8;
+        }
+
+        @media (max-width: 800px) {
+            .ui-panel { padding: 10px 18px; gap: 12px; }
+            .control-group { padding: 4px 12px; }
+            button { padding: 6px 16px; font-size: 0.8rem; }
+        }
+    </style>
+    <!-- Matter.js Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
+</head>
+<body>
+<div id="canvas-container">
+    <canvas id="physicsCanvas" width="1100" height="600"></canvas>
+    <div class="ui-panel">
+        <div class="control-group">
+            <label>⚡ ACCELERATION:</label>
+            <input type="range" id="accelSlider" min="0" max="0.03" step="0.0005" value="0.008">
+            <span id="accelValue" class="speed-display" style="min-width: 70px;">0.008</span>
+        </div>
+        <div class="control-group">
+            <label>🏎️ CURRENT SPEED:</label>
+            <span id="currentSpeedDisplay" class="speed-display">0.00</span>
+        </div>
+        <button id="launchBtn">🚀 LAUNCH / RESET</button>
+        <button id="addBoxBtn">📦 ADD RANDOM BOX</button>
+    </div>
+</div>
+
+<script>
+    // Module aliases
+    const Engine = Matter.Engine;
+    const World = Matter.World;
+    const Bodies = Matter.Bodies;
+    const Body = Matter.Body;
+    const Vector = Matter.Vector;
+    const Runner = Matter.Runner;
+    const Render = Matter.Render;
+    const Events = Matter.Events;
+    const Constraint = Matter.Constraint;
+
+    // Create engine
+    const engine = Engine.create();
+    engine.gravity.x = 0;
+    engine.gravity.y = 0.5;  // downward gravity for realistic arcs
+    engine.positionIterations = 12;
+    engine.velocityIterations = 8;
+
+    // Get canvas element
+    const canvas = document.getElementById('physicsCanvas');
+    const container = document.getElementById('canvas-container');
+    
+    // Create renderer
+    const render = Render.create({
+        canvas: canvas,
+        engine: engine,
+        options: {
+            width: 1100,
+            height: 600,
+            wireframes: false,
+            background: '#0f1724',
+            pixelRatio: window.devicePixelRatio
+        }
+    });
+
+    // World bounds (walls)
+    const wallOptions = { 
+        isStatic: true, 
+        restitution: 0.7,
+        friction: 0.3,
+        render: { fillStyle: '#2a405c', strokeStyle: '#5a8fbc', lineWidth: 2 }
+    };
+    
+    const ground = Bodies.rectangle(550, 590, 1100, 20, { 
+        ...wallOptions, 
+        isStatic: true,
+        render: { fillStyle: '#2c4f6e', strokeStyle: '#7ab3cc', lineWidth: 2 }
+    });
+    
+    const leftWall = Bodies.rectangle(20, 300, 20, 600, wallOptions);
+    const rightWall = Bodies.rectangle(1080, 300, 20, 600, wallOptions);
+    const ceiling = Bodies.rectangle(550, 20, 1100, 20, wallOptions);
+    
+    // Ground extra decorative surface
+    const floorSurface = Bodies.rectangle(550, 585, 1100, 10, { 
+        isStatic: true, 
+        restitution: 0.5,
+        render: { fillStyle: '#3d6b8c', opacity: 0.6 }
+    });
+
+    // Add walls to world
+    World.add(engine.world, [ground, leftWall, rightWall, ceiling, floorSurface]);
+
+    // --- Interactive Object (Main moving box) ---
+    let mainBox = null;
+    let isMoving = false;
+    let currentAcceleration = 0.008;   // px/frame² style acceleration
+    let currentVelocityX = 0;
+    let frameCount = 0;
+    let animationId = null;
+    
+    // Extra boxes storage
+    let extraBoxes = [];
+    
+    // UI Elements
+    const accelSlider = document.getElementById('accelSlider');
+    const accelValueSpan = document.getElementById('accelValue');
+    const currentSpeedSpan = document.getElementById('currentSpeedDisplay');
+    const launchBtn = document.getElementById('launchBtn');
+    const addBoxBtn = document.getElementById('addBoxBtn');
+    
+    // Create main interactive box (starts from left side)
+    function createMainBox() {
+        if (mainBox) {
+            World.remove(engine.world, mainBox);
+        }
+        // Box with nice gradient look (via render)
+        mainBox = Bodies.rectangle(80, 520, 48, 48, {
+            restitution: 0.65,
+            friction: 0.2,
+            density: 0.004,
+            render: {
+                fillStyle: '#ffaa44',
+                strokeStyle: '#ffdd99',
+                lineWidth: 3,
+                sprite: {
+                    texture: null
+                }
+            },
+            label: 'mainBox'
+        });
+        
+        // Add a small trail effect via custom property
+        mainBox.customSpeed = 0;
+        World.add(engine.world, mainBox);
+        return mainBox;
+    }
+    
+    // Add random extra box (different sizes & colors)
+    function addRandomBox() {
+        const size = 28 + Math.random() * 28;
+        const x = 100 + Math.random() * 300;
+        const y = 100 + Math.random() * 400;
+        const hue = Math.random() * 360;
+        const colors = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#f9ca24', '#6c5ce7', '#a8e6cf'];
+        const randomColor = colors[Math.floor(Math.random() * colors.length)];
+        
+        const newBox = Bodies.rectangle(x, y, size, size, {
+            restitution: 0.5 + Math.random() * 0.4,
+            friction: 0.2,
+            density: 0.003,
+            render: {
+                fillStyle: randomColor,
+                strokeStyle: '#ffffff88',
+                lineWidth: 2
+            }
+        });
+        
+        // Give small random initial velocity
+        Body.setVelocity(newBox, { x: (Math.random() - 0.5) * 3, y: (Math.random() - 0.5) * 2 });
+        
+        World.add(engine.world, newBox);
+        extraBoxes.push(newBox);
+        
+        // Auto remove after 5 seconds to keep performance? No, but limit effect (optional)
+        if (extraBoxes.length > 18) {
+            const oldest = extraBoxes.shift();
+            World.remove(engine.world, oldest);
+        }
+        
+        return newBox;
+    }
+    
+    // Reset / Launch main box from left side with acceleration effect
+    function resetAndLaunch() {
+        // Reset position and velocity for main object
+        if (!mainBox) {
+            createMainBox();
+        }
+        
+        // Set position to left side
+        Body.setPosition(mainBox, { x: 80, y: 520 });
+        // Reset velocity
+        Body.setVelocity(mainBox, { x: 0, y: 0 });
+        Body.setAngularVelocity(mainBox, 0);
+        
+        currentVelocityX = 0;
+        frameCount = 0;
+        isMoving = true;
+        
+        // Reset any previous animation flags
+        updateSpeedDisplay(0);
+        
+        // Small visual feedback: make box glow temporarily via style - but we use render fill
+        mainBox.render.fillStyle = '#ffcc55';
+        setTimeout(() => {
+            if (mainBox) mainBox.render.fillStyle = '#ffaa44';
+        }, 200);
+    }
+    
+    // Update speed display
+    function updateSpeedDisplay(speed) {
+        currentSpeedSpan.innerText = speed.toFixed(2);
+        // Optional color coding
+        if (speed > 12) currentSpeedSpan.style.color = '#ff8888';
+        else if (speed > 6) currentSpeedSpan.style.color = '#ffbb77';
+        else currentSpeedSpan.style.color = '#aaffdd';
+    }
+    
+    // Apply acceleration to main object each frame (simulate "lambat ke cepat")
+    // We'll use Matter's beforeUpdate event to apply force based on acceleration.
+    // This creates realistic physics: object gains speed gradually.
+    
+    let lastTimestamp = 0;
+    let lastVelocityX = 0;
+    
+    // Apply acceleration relative to time delta for smooth physics
+    function applyAccelerationToMain() {
+        if (!isMoving || !mainBox) return;
+        
+        // Get current velocity
+        const vel = mainBox.velocity;
+        // Acceleration value from slider (units: force multiplier for smooth ramp)
+        // Converting to realistic force: Force = mass * acceleration, but we'll apply direct velocity increment
+        // Using delta time for framerate independence
+        const delta = engine.timing.timestamp ? Math.min(0.033, (engine.timing.timestamp - lastTimestamp) / 1000) : 0.016;
+        if (delta > 0 && delta < 0.05) {
+            // Increase horizontal velocity based on acceleration ( slow -> fast core mechanic )
+            // Formula: v += a * dt   (percepatan linear)
+            const accel = currentAcceleration * 70;  // scaling factor for visible speed range
+            let newVx = vel.x + (accel * delta);
+            // Cap max speed to avoid crazy exit
+            if (newVx > 22) newVx = 22;
+            // Set new velocity while preserving y velocity
+            Body.setVelocity(mainBox, { x: newVx, y: vel.y });
+            
+            // update speed display
+            const speedMagnitude = Math.abs(mainBox.velocity.x);
+            updateSpeedDisplay(speedMagnitude);
+            
+            // If speed is high, show effect
+            if (speedMagnitude > 18) {
+                mainBox.render.fillStyle = '#ff7744';
+            } else if (speedMagnitude > 8) {
+                mainBox.render.fillStyle = '#ffaa55';
+            } else {
+                mainBox.render.fillStyle = '#ffcc66';
+            }
+        }
+        lastTimestamp = engine.timing.timestamp;
+    }
+    
+    // Event: Before update to apply continuous acceleration (from slow to fast)
+    Events.on(engine, 'beforeUpdate', function() {
+        if (isMoving && mainBox) {
+            applyAccelerationToMain();
+            
+            // Auto-stop condition? Not needed, but nice: if box goes off screen horizontally beyond limits, reset?
+            if (mainBox && mainBox.position.x > 1080) {
+                // if it reaches far right, show message but keep moving
+                // optional: we don't stop, just reset after out of bounds? Better bring back? But we just let bouncy walls handle
+                if (mainBox.position.x > 1150) {
+                    // teleport back to left as a reset trigger but with same momentum? no, reset movement
+                    resetAndLaunch();
+                }
+            }
+        }
+    });
+    
+    // Add some visual sparks / dynamic updates to extra boxes (just for fun)
+    function updateExtraBoxesDynamic() {
+        extraBoxes.forEach((box, idx) => {
+            // random micro interactions? just shine effect based on speed
+            const spd = Math.abs(box.velocity.x) + Math.abs(box.velocity.y);
+            if (spd > 8) {
+                box.render.fillStyle = '#ffaa77';
+            } else if (spd > 3) {
+                box.render.fillStyle = '#88ddff';
+            } else {
+                // revert to original color set but we didn't store, just use light color
+                box.render.fillStyle = '#b0c4de';
+            }
+        });
+    }
+    
+    Events.on(engine, 'afterUpdate', function() {
+        updateExtraBoxesDynamic();
+    });
+    
+    // Slider event: update acceleration value (dynamically)
+    accelSlider.addEventListener('input', (e) => {
+        currentAcceleration = parseFloat(e.target.value);
+        accelValueSpan.innerText = currentAcceleration.toFixed(4);
+        // Visual feedback: update current acceleration display
+    });
+    
+    // Launch / Reset button
+    launchBtn.addEventListener('click', () => {
+        resetAndLaunch();
+        isMoving = true;
+    });
+    
+    // Add random box button
+    addBoxBtn.addEventListener('click', () => {
+        addRandomBox();
+    });
+    
+    // Also allow clicking on canvas to create random box on click (interactive)
+    canvas.addEventListener('click', (e) => {
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+        const mouseX = (e.clientX - rect.left) * scaleX;
+        const mouseY = (e.clientY - rect.top) * scaleY;
+        
+        // create small interactive physics object at click
+        const clickBox = Bodies.rectangle(mouseX, mouseY, 30, 30, {
+            restitution: 0.6,
+            friction: 0.2,
+            render: { fillStyle: '#f0a3ff', strokeStyle: '#fff', lineWidth: 2 }
+        });
+        World.add(engine.world, clickBox);
+        extraBoxes.push(clickBox);
+        
+        // give slight random velocity
+        Body.setVelocity(clickBox, { x: (Math.random() - 0.5) * 4, y: (Math.random() - 0.5) * 3 - 2 });
+        
+        // auto cleanup after many boxes
+        if (extraBoxes.length > 25) {
+            const oldestRemoved = extraBoxes.shift();
+            World.remove(engine.world, oldestRemoved);
+        }
+    });
+    
+    // Initialize world
+    createMainBox();
+    
+    // Add several initial random boxes for fun
+    for (let i = 0; i < 4; i++) {
+        setTimeout(() => addRandomBox(), i * 200);
+    }
+    
+    // Run engine and render
+    const runner = Runner.create();
+    Runner.run(runner, engine);
+    Render.run(render);
+    
+    // Adjust canvas on resize (keep aspect)
+    window.addEventListener('resize', () => {
+        // optional: maintain render size but we keep fixed canvas
+        render.canvas.width = 1100;
+        render.canvas.height = 600;
+        render.options.width = 1100;
+        render.options.height = 600;
+    });
+    
+    // Introductory message in console with physics law
+    console.log('🔥 MATTER.JS PHYSICS | Slow → Fast motion via acceleration: v = a * t');
+    console.log(`Initial acceleration: ${currentAcceleration} | Click canvas or press Launch!`);
+    
+    // Display initial speed
+    updateSpeedDisplay(0);
+    
+    // Additional feature: show frame independent acceleration: object moves from slow to fast realistically
+    // Explanation: Every frame we increase horizontal velocity by a * deltaTime, mimicking force law.
+    // Note: reset button relaunches object from left edge with zero speed.
+    
+    // For better UX: tooltip effect
+    const style = document.createElement('style');
+    style.textContent = `::-webkit-scrollbar { display: none; } canvas { cursor: crosshair; }`;
+    document.head.appendChild(style);
+</script>
+</body>
+</html>
