@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!------------------------
+   # Js-JQuery-UI
+  ------------------------->
+  <link rel="stylesheet" href="https://code.jquery.com/ui/1.14.1/themes/base/jquery-ui.css">
+  <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
+  <script src="https://code.jquery.com/ui/1.14.0/jquery-ui.js" integrity="sha256-u0L8aA6Ev3bY2HI4y0CAyr9H8FRWgX4hZ9+K7C2nzdc=" crossorigin="anonymous"></script>
+
+  <!------------------------
+  # Tailwind CSS
+  ------------------------->
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <link rel="stylesheet" href="style.css">
+  <title>CRUD Fake API</title>
+</head>
+<body>
+  <div class="container p-10">
+    
+    <p class="text-4xl">Display Data Products</p>
+    <br>
+    <button id="btn1-getall" class="bg-blue-600 px-3 py-2 text-white">
+      Display All
+    </button>
+    <div class="result-area">
+      <h3>Response</h3>
+      <div class="border-solid border-black border-x border-y p-2">
+        <p class="get-area1"></p>
+      </div>
+    </div>
+
+    <br>
+
+    <button id="btn1-getbyid" class="bg-blue-600 px-3 py-2 text-white">
+      Get Data By ID
+    </button>
+    <form class="m-2" action="/" method="post">
+      <label for="product-id">Product ID</label>
+      <input class="border-solid outline-1" type="number" name="product-id" id="product-id">
+    </form>
+    <div class="result-area">
+      <h3>Response</h3>
+      <div class="border-solid border-black border-x border-y p-2">
+        <p class="get-area2"></p>
+      </div>
+    </div>
+    <br>
+    
+    <p class="text-4xl">Add Data Product</p>
+
+    <div class="p-2">
+      <form action="" method="post">
+        <label for="p-title">Title: </label>
+        <input class="border-solid outline-1" type="text" name="p-title" id="p-title" placeholder="...">
+        <br>
+        <label for="p-price">Price: </label>
+        <input class="border-solid outline-1" type="number" name="p-price" id="p-price" placeholder="...">
+        <br>
+        <label for="p-desc">Description: </label>
+        <input class="border-solid outline-1" type="text" name="p-desc" id="p-desc" placeholder="...">
+        <br>
+        <label for="p-category">Category: </label>
+        <input class="border-solid outline-1" type="text" name="p-category" id="p-category" placeholder="...">
+        <br>
+        <label for="p-image">Image: </label>
+        <input class="border-solid outline-1" type="text" name="p-image" id="p-image" placeholder="...">
+      </form>
+    </div>
+    
+    <button id="btn2-postproduct" class="bg-blue-600 px-3 py-2 text-white">
+      Post Product
+    </button>
+    <div class="result-area">
+      <h3>Response</h3>
+      <div class="border-solid border-black border-x border-y p-2">
+        <p class="post-area1"></p>
+      </div>
+    </div>
+    
+    <p class="text-4xl">Update Data Product</p>
+
+    <!-- Get ID Product -->
+    <button id="btn3-getbyid" class="bg-blue-600 px-3 py-2 text-white">
+      Get data by ID to update
+    </button>
+    <form class="m-2" action="/" method="post">
+      <label for="update-product-id">Product ID</label>
+      <input class="border-solid outline-1" type="number" name="update-product-id" id="update-product-id">
+    </form>
+    
+    <!-- Update Form -->
+    <div class="p-2">
+      <form action="" method="post">
+        <label for="update-p-title">Title: </label>
+        <input class="border-solid outline-1" type="text" name="update-p-title" id="update-p-title" placeholder="...">
+        <br>
+        <label for="update-p-price">Price: </label>
+        <input class="border-solid outline-1" type="number" name="update-p-price" id="update-p-price" placeholder="...">
+        <br>
+        <label for="update-p-desc">Description: </label>
+        <input class="border-solid outline-1" type="text" name="update-p-desc" id="update-p-desc" placeholder="...">
+        <br>
+        <label for="update-p-category">Category: </label>
+        <input class="border-solid outline-1" type="text" name="update-p-category" id="update-p-category" placeholder="...">
+        <br>
+        <label for="update-p-image">Image: </label>
+        <input class="border-solid outline-1" type="text" name="update-p-image" id="update-p-image" placeholder="...">
+      </form>
+    </div>
+
+    <button id="btn3-update" class="bg-blue-600 px-3 py-2 text-white">
+      Update Data
+    </button>
+    
+    <div class="result-area">
+      <h3>Response</h3>
+      <div class="border-solid border-black border-x border-y p-2">
+        <p class="get-area3"></p>
+      </div>
+    </div>
+
+    <br>
+
+    <p class="text-4xl">Delete Data Product</p>
+    <!-- Get ID Product -->
+    <button id="btn4-deletebyid" class="bg-blue-600 px-3 py-2 text-white">
+      Delete data By ID
+    </button>
+    <form class="m-2" action="/" method="post">
+      <label for="delete-product-id">Product ID</label>
+      <input class="border-solid outline-1" type="number" name="delete-product-id" id="delete-product-id">
+    </form>
+
+    <div class="result-area">
+      <h3>Response</h3>
+      <div class="border-solid border-black border-x border-y p-2">
+        <p class="delete-area4"></p>
+      </div>
+    </div>
+  </div>
+
+  <script src="main.js"></script>
+</body>
+</html>
